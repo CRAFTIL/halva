@@ -5,15 +5,19 @@ $batchContent = @"
 set "IMG_PATH=%USERPROFILE%\cat_wallpaper.jpg"
 set "URL=https://az-market.net/tn_Cat_495623_3876.jpg"
 
-:: 1. Try to download the new image; if it fails, it just keeps the old one
-powershell -command "try { iwr '%URL%' -OutFile '%IMG_PATH%' } catch {}"
+:: 1. Download the image (Keep old one if offline)
+powershell -command "try { iwr '%URL%' -OutFile '%IMG_PATH%' -ErrorAction Stop } catch {}"
 
-:: 2. Set the wallpaper and force an immediate refresh (The '20, 0, path, 3' is the key)
+:: 2. Set style to STRETCH (Value 2)
+reg add "HKCU\Control Panel\Desktop" /v WallpaperStyle /t REG_SZ /d 2 /f
+reg add "HKCU\Control Panel\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f
+
+:: 3. Apply the wallpaper immediately
 powershell -command "Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class W { [DllImport(\"user32.dll\")] public static extern int SystemParametersInfo(int u, int p, string v, int f); }'; [W]::SystemParametersInfo(20, 0, '%IMG_PATH%', 3)"
 "@
 
-# Save the batch file to startup
+# Save the batch file
 $batchContent | Out-File -FilePath $batchPath -Encoding ASCII
 
-# Run it immediately
+# Run immediately and hide the window
 Start-Process "$batchPath" -WindowStyle Hidden
