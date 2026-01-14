@@ -1,0 +1,15 @@
+@echo off
+set "IMG=%USERPROFILE%\cat.jpg"
+set "URL=https://az-market.net/tn_Cat_495623_3876.jpg"
+
+:: Download image if missing
+if not exist "%IMG%" powershell -Command "try { iwr '%URL%' -OutFile '%IMG%' -UseBasicParsing } catch {}"
+
+:: Set desktop wallpaper (Stretch)
+if exist "%IMG%" (
+    reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%IMG%" /f >nul
+    reg add "HKCU\Control Panel\Desktop" /v WallpaperStyle /t REG_SZ /d 2 /f >nul
+    reg add "HKCU\Control Panel\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul
+    RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
+)
+
