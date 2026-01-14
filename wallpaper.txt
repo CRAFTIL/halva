@@ -1,15 +1,16 @@
 @echo off
 set "IMG_PATH=%USERPROFILE%\cat_wallpaper.jpg"
+set "BMP_PATH=%USERPROFILE%\cat_wallpaper.bmp"
 set "IMG_URL=https://az-market.net/tn_Cat_495623_3876.jpg"
 
 :: 1. Download the image
 powershell -Command "try { iwr '%IMG_URL%' -OutFile '%IMG_PATH%' } catch {}"
 
-:: 2. Set the Registry key
-reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%IMG_PATH%" /f
+:: 2. Convert JPG to BMP
+powershell -Command "Add-Type -AssemblyName System.Drawing; $img=[System.Drawing.Image]::FromFile('%IMG_PATH%'); $img.Save('%BMP_PATH%', [System.Drawing.Imaging.ImageFormat]::Bmp); $img.Dispose()"
 
-:: 3. Force Windows to update the wallpaper immediately
-powershell -Command "Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class W { [DllImport(\"user32.dll\")] public static extern int SystemParametersInfo(int u, int p, string v, int f); }'; [W]::SystemParametersInfo(20, 0, '%IMG_PATH%', 3)"
+:: 3. Set the Registry key
+reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%BMP_PATH%" /f
 
-:: 4. Final Refresh (Just in case)
+:: 4. Force Windows to update the wallpaper immediately
 RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
