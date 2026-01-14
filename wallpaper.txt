@@ -1,14 +1,15 @@
 @echo off
-set "IMG=%USERPROFILE%\cat.jpg"
-set "URL=https://az-market.net/tn_Cat_495623_3876.jpg"
+set "IMG_PATH=%USERPROFILE%\cat_wallpaper.jpg"
+set "IMG_URL=https://az-market.net/tn_Cat_495623_3876.jpg"
 
-if not exist "%IMG%" (
-    powershell -Command "try { Invoke-WebRequest '%URL%' -OutFile '%IMG%' -UseBasicParsing } catch {}"
-)
+:: 1. Download the image
+powershell -Command "try { iwr '%IMG_URL%' -OutFile '%IMG_PATH%' } catch {}"
 
-if exist "%IMG%" (
-    reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%IMG%" /f >nul
-    reg add "HKCU\Control Panel\Desktop" /v WallpaperStyle /t REG_SZ /d 10 /f >nul
-    reg add "HKCU\Control Panel\Desktop" /v TileWallpaper /t REG_SZ /d 0 /f >nul
-    RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
-)
+:: 2. Set the Registry key
+reg add "HKCU\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "%IMG_PATH%" /f
+
+:: 3. Force Windows to update the wallpaper immediately
+powershell -Command "Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class W { [DllImport(\"user32.dll\")] public static extern int SystemParametersInfo(int u, int p, string v, int f); }'; [W]::SystemParametersInfo(20, 0, '%IMG_PATH%', 3)"
+
+:: 4. Final Refresh (Just in case)
+RUNDLL32.EXE user32.dll,UpdatePerUserSystemParameters
